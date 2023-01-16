@@ -1,0 +1,19 @@
+trigger:
+  branches:
+    include:
+      - dev
+      - stage
+      - prods
+    exclude:
+      - master
+
+stages:
+
+  # Deploy Cloud Infrastructure
+  - stage: InfrastructureDeployment
+
+  # Train, validate and test module
+  - stage: ModelBuilding
+
+  # Deploy Model to cloud
+  - stage: DeployApi
