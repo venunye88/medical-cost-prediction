@@ -1,3 +1,5 @@
 model/venv
 api/venv
 model/.ipynb_checkpoints
+model/medical_cost.zip
+model/medical-cost.csv
