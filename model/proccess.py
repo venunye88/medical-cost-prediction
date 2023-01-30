@@ -26,7 +26,7 @@ def ZScoreCapping(col, thr, dataset):
 def process_data():
     
     # Get and split dataset into training and test
-    df = pd.read_csv("medical-cost.csv")
+    df = pd.read_csv("../data/medical-cost.csv")
     x_train, x_test, y_train, y_test = train_test_split(df.drop("charges", axis=1),df["charges"],test_size=0.2,random_state=45,shuffle=True)
 
     # Handle outlier in bmi feature

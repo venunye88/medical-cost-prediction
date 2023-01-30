@@ -1,22 +1,17 @@
 
 #Import Libries
-import numpy as np
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_absolute_error
 from sklearn.ensemble import RandomForestRegressor
-# from sklearn.metrics import mean_absolute_percentage_error
+from sklearn.metrics import mean_absolute_percentage_error
 
 #Import custom function
 from proccess import process_data
 
-def MAPE(y_true, y_pred): 
-    y_true, y_pred = np.array(y_true), np.array(y_pred)
-    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
-
 def evaluate_model(ypred, ytest):
         
     """
-    This method is suppose to evaluate our models
+    This method suppose to evaluate our models
     and return its results.
     Args:
         ypred: The predicted values
@@ -26,7 +21,7 @@ def evaluate_model(ypred, ytest):
     mae = round(mean_absolute_error(y_true=ytest, y_pred=ypred), 3)
         
     #Evaluate mean absolute percentage error
-    mape = round(MAPE(y_true=ytest,y_pred=ypred),3)
+    mape = round(mean_absolute_percentage_error(y_true=ytest,y_pred=ypred),3)
         
     #Evaluate r2
     r_squared = round(r2_score(y_true=ytest, y_pred=ypred),3)
