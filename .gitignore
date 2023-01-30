@@ -3,3 +3,9 @@ api/venv
 model/.ipynb_checkpoints
 model/medical_cost.zip
 model/medical-cost.csv
+model/medical_cost.zip.1
+model/model.pkl
+data
+.pytest_cache
+.vscode
+venv
