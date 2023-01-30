@@ -25,7 +25,7 @@ def evaluate_model(ypred, ytest):
         
     #Evaluate r2
     r_squared = round(r2_score(y_true=ytest, y_pred=ypred),3)
-        
+    
     #Return results
     return mae, mape, r_squared
 
@@ -39,7 +39,7 @@ def train_model():
     rfr.fit(xtrain_data, y_train)
     ypred = rfr.predict(xtest_data)
 
-    # #Evaluate model
+    #Evaluate model
     mae, mape, r2 = evaluate_model(ypred=ypred, ytest=y_test)
     evaluated_results = {"mae": mae, "mape": mape, "r2": r2}
 

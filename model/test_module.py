@@ -1,14 +1,13 @@
 import unittest
-
 from train import train_model
 
 class TestModule(unittest.TestCase):
 
     def test_Module(self):
         
-        # Arrange
+        # Act
         results = train_model()
 
         # Assert
         self.assertGreaterEqual(80, results["r2"])
-        self.assertGreaterEqual(30, results["mape"])
+        self.assertLessEqual(results["mape"], 30)
