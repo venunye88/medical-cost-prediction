@@ -332,7 +332,7 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
 
-                az storage account create\
+                az storage account create \
                 -n $(storage-account) \
                 -g $(resource-group) \
                 --kind $(kind) \
