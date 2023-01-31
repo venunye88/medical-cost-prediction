@@ -122,6 +122,7 @@ stages:
             displayName: publish model as an artifact
             inputs:
               targetPath: '$(System.DefaultWorkingDirectory)/model/module'
+              artifact: 'drop'
               publishLocation: 'pipeline'
 
           # - task: PublishBuildArtifacts@1
@@ -147,6 +148,7 @@ stages:
           - task: DownloadPipelineArtifact@2
             inputs:
               buildType: 'current'
+              artifactName: 'drop'
               targetPath: '$(System.DefaultWorkingDirectory)/api'
               
           - task: Bash@3
