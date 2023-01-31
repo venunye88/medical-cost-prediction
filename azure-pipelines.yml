@@ -5,6 +5,9 @@ trigger:
 
 variables:
 
+  - name: dataset-url
+    value: https://publicimages0.blob.core.windows.net/datasets/Tabular/modecal_cost/medical_cost.zip
+
   - name: location
     value: eastus
 
@@ -41,6 +44,9 @@ variables:
   - name: kind
     value: StorageV2
 
+  - name: containerapp-log-analytics
+    value: medical-cost
+
 stages:
 
   # Run Test on module
@@ -75,7 +81,7 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                wget https://publicimages0.blob.core.windows.net/datasets/Tabular/modecal_cost/medical_cost.zip
+                wget $(dataset-url)
                 mv medical_cost.zip ../data
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
 
@@ -130,7 +136,7 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                wget https://publicimages0.blob.core.windows.net/datasets/Tabular/modecal_cost/medical_cost.zip
+                wget $(dataset-url)
                 mv medical_cost.zip ../data
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
 
@@ -251,6 +257,35 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: az group create --location $(location) --name $(resource-group)
 
+          # Create log analytics workspace
+          - task: AzureCLI@2
+            displayName: create log analytics for containerapp
+            inputs:
+              azureSubscription: $(subscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az monitor log-analytics workspace create \
+                -n $(containerapp-log-analytics) \
+                -g $(resource-group) 
+
+          # Create containerapp environment
+          - task: AzureCLI@2
+            displayName: create containerapp environment
+            inputs:
+              azureSubscription: $(subscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                WORKSPACE_ID=`az monitor log-analytics workspace show --query customerId -g $(resource-group) -n $(containerapp-log-analytics) -o tsv | tr -d '[:space:]'`
+                WORKSPACE_PRIMARY_KEY=`az monitor log-analytics workspace get-shared-keys --query primarySharedKey -g $(resource-group) -n $(containerapp-environment-name) -o tsv | tr -d '[:space:]'`
+                az containerapp env create \
+                --logs-workspace-key $WORKSPACE_PRIMARY_KEY \
+                --resource-group $(resource-group) \
+                --name $(containerapp-environment-name) \
+                --logs-workspace-id $WORKSPACE_ID \
+                --location $(location) 
+  
           # Deploy containerapp
           - task: AzureCLI@2
             displayName: Deploy containerapp
