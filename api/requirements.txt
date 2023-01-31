@@ -7,3 +7,5 @@ scikit-learn
 pandas
 numpy
 pytest
+pytest-azurepipelines
+pytest-cov
