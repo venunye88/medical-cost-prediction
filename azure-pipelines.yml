@@ -108,6 +108,14 @@ stages:
                 mv model.pkl module
               workingDirectory: '$(System.DefaultWorkingDirectory)/model'
 
+          - task: PublishBuildArtifacts@1
+            displayName: publish build model as an artifact
+            inputs:
+              PathtoPublish: '$(System.DefaultWorkingDirectory)/model/module'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
+          
+
   # Deploy Cloud Infrastructure
   # - stage: InfrastructureDeployment
   #   jobs:
