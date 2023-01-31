@@ -9,7 +9,7 @@ stages:
   - stage: TrainAndValidateModel
     jobs:
 
-      - job: PreprocessDatasets
+      - job: PreprocessDataAndTrainModel
         displayName: Download and proccess datasets
         steps:
 
@@ -37,13 +37,13 @@ stages:
                 mv medical_cost.zip ../data
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
 
-          # - task: Bash@3
-          #   displayName: Test Model
-          #   inputs:
-          #     targetType: 'inline'
-          #     script: |
-          #       python test_module.py
-          #     workingDirectory: '$(System.DefaultWorkingDirectory)/model'
+          - task: Bash@3
+            displayName: Train model
+            inputs:
+              targetType: 'inline'
+              script: |
+                python train.py
+              workingDirectory: '$(System.DefaultWorkingDirectory)/model'
 
       # - job: TestModel
 
