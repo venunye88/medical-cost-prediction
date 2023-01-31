@@ -5,16 +5,17 @@ trigger:
 
 stages:
 
-  # Preprocess Dataset
-  - stage: TestModulePerformance
+  # Run Test on module
+  - stage: TestModuleStage
     jobs:
 
-      - job: PreprocessDataJob
-        displayName: Download and proccess datasets
+      # Test Module Performance
+      - job: TestModuleJob
+        displayName: Validate module accuracy
         steps:
 
           - task: UsePythonVersion@0
-            displayName: Install Python Packages
+            displayName: Set python version
             inputs:
               versionSpec: '3.10'
               addToPath: true
@@ -29,23 +30,16 @@ stages:
               workingDirectory: '$(System.DefaultWorkingDirectory)/'
 
           - task: Bash@3
-            displayName: Download Dataset for preprocessing
+            displayName: Download Dataset
             inputs:
               targetType: 'inline'
               script: |
                 wget https://publicimages0.blob.core.windows.net/datasets/Tabular/modecal_cost/medical_cost.zip
-              workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
-
-          - task: Bash@3
-            displayName: Move dataset into data folder
-            inputs:
-              targetType: 'inline'
-              script: |
                 mv medical_cost.zip ../data
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
 
           - task: PythonScript@0
-            displayName: Extract File
+            displayName: Extract dataset from zip file
             inputs:
               scriptSource: 'inline'
               script: |
@@ -57,14 +51,52 @@ stages:
 
           - task: Bash@3
             continueOnError: false
-            displayName: Test Model
+            displayName: Run unittest
             inputs:
               targetType: 'inline'
               script: |
                 pytest -v -s
               workingDirectory: '$(System.DefaultWorkingDirectory)/model'
 
-      # - job: TestModel
+      # Train Module After Test Passed
+      - job: BuildModel
+        dependsOn: 
+          - TestModuleStage
+        steps:
+          
+          - task: UsePythonVersion@0
+            displayName: Set python version
+            inputs:
+              versionSpec: '3.10'
+              addToPath: true
+              architecture: 'x64'
+
+          - task: Bash@3
+            displayName: Install python packages
+            inputs:
+              targetType: 'inline'
+              script: |
+                pip install -r requirements.txt
+              workingDirectory: '$(System.DefaultWorkingDirectory)/'
+
+          - task: Bash@3
+            displayName: Download Dataset
+            inputs:
+              targetType: 'inline'
+              script: |
+                wget https://publicimages0.blob.core.windows.net/datasets/Tabular/modecal_cost/medical_cost.zip
+                mv medical_cost.zip ../data
+              workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
+
+          - task: Bash@3
+            displayName: Train model
+            inputs:
+              targetType: 'inline'
+              script: |
+                mkdir module
+                python train.py
+                mv model.pkl module
+              workingDirectory: '$(System.DefaultWorkingDirectory)/model'
 
   # Deploy Cloud Infrastructure
   # - stage: InfrastructureDeployment
