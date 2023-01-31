@@ -372,7 +372,8 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 mkdir module
-                mv drop/model.pkl module
+                mv model.pkl module
+              workingDirectory: '$(System.DefaultWorkingDirectory)/api'
 
           # Copy model into storage account
           - task: AzureFileCopy@3
