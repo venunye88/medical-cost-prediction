@@ -143,7 +143,12 @@ stages:
               versionSpec: '3.10'
               addToPath: true
               architecture: 'x64'
-        
+
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              targetPath: '$(System.DefaultWorkingDirectory)/api'
+              
           - task: Bash@3
             displayName: Install python packages
             inputs:

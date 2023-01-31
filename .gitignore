@@ -10,3 +10,5 @@ model/model.pkl
 venv
 data/medical_cost.zip
 data/medical-cost.csv
+api/model.pkl
+model.pkl
