@@ -34,6 +34,13 @@ stages:
               targetType: 'inline'
               script: |
                 wget https://publicimages0.blob.core.windows.net/datasets/Tabular/modecal_cost/medical_cost.zip
+              workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
+
+          - task: Bash@3
+            displayName: Move dataset into data folder
+            inputs:
+              targetType: 'inline'
+              script: |
                 mv medical_cost.zip ../data
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
 
