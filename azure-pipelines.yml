@@ -9,7 +9,8 @@ stages:
   - stage: TrainAndValidateModel
     jobs:
 
-      - job: TrainModel
+      - job: PreprocessDatasets
+        displayName: Download and proccess datasets
         steps:
 
           - task: UsePythonVersion@0
