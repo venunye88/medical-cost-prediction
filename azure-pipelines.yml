@@ -1,0 +1,124 @@
+trigger:
+  branches:
+    include:
+      - master
+
+stages:
+
+  # Run Test on module
+  - stage: TestModuleStage
+    jobs:
+
+      # Test Module Performance
+      - job: TestModuleJob
+        displayName: Validate module
+        steps:
+
+          - task: UsePythonVersion@0
+            displayName: Set python version
+            inputs:
+              versionSpec: '3.10'
+              addToPath: true
+              architecture: 'x64'
+
+          - task: Bash@3
+            displayName: Install python packages
+            inputs:
+              targetType: 'inline'
+              script: |
+                pip install -r requirements.txt
+              workingDirectory: '$(System.DefaultWorkingDirectory)/'
+
+          - task: Bash@3
+            displayName: Download Dataset
+            inputs:
+              targetType: 'inline'
+              script: |
+                wget https://publicimages0.blob.core.windows.net/datasets/Tabular/modecal_cost/medical_cost.zip
+                mv medical_cost.zip ../data
+              workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
+
+          - task: PythonScript@0
+            displayName: Extract dataset from zip file
+            inputs:
+              scriptSource: 'inline'
+              script: |
+                import zipfile
+                data=zipfile.ZipFile("../data/medical_cost.zip")
+                data.extractall("../data/")
+                data.close()
+              workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
+
+          - task: Bash@3
+            continueOnError: false
+            displayName: Run unittest
+            inputs:
+              targetType: 'inline'
+              script: |
+                pytest -v -s
+              workingDirectory: '$(System.DefaultWorkingDirectory)/model'
+
+      # Train Module After Test Passed
+      - job: BuildModel
+        dependsOn: TestModuleJob
+        steps:
+          
+          - task: UsePythonVersion@0
+            displayName: Set python version
+            inputs:
+              versionSpec: '3.10'
+              addToPath: true
+              architecture: 'x64'
+
+          - task: Bash@3
+            displayName: Install python packages
+            inputs:
+              targetType: 'inline'
+              script: |
+                pip install -r requirements.txt
+              workingDirectory: '$(System.DefaultWorkingDirectory)/'
+
+          - task: Bash@3
+            displayName: Download Dataset
+            inputs:
+              targetType: 'inline'
+              script: |
+                wget https://publicimages0.blob.core.windows.net/datasets/Tabular/modecal_cost/medical_cost.zip
+                mv medical_cost.zip ../data
+              workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
+
+          - task: PythonScript@0
+            displayName: Extract dataset from zip file
+            inputs:
+              scriptSource: 'inline'
+              script: |
+                import zipfile
+                data=zipfile.ZipFile("../data/medical_cost.zip")
+                data.extractall("../data/")
+                data.close()
+              workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
+
+          - task: Bash@3
+            displayName: Train model
+            inputs:
+              targetType: 'inline'
+              script: |
+                mkdir module
+                python train.py
+                mv model.pkl module
+              workingDirectory: '$(System.DefaultWorkingDirectory)/model'
+
+          - task: PublishBuildArtifacts@1
+            displayName: publish build model as an artifact
+            inputs:
+              PathtoPublish: '$(System.DefaultWorkingDirectory)/model/module'
+              ArtifactName: 'drop'
+              publishLocation: 'Container'
+
+  # Deploy Cloud Infrastructure
+  - stage: InfrastructureDeployment
+    jobs:
+      - job: DeployResources
+          
+  # Deploy Model to cloud
+  # - stage: DeployApi
