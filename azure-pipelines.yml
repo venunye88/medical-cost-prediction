@@ -54,8 +54,10 @@ stages:
                 data.extractall("../data/")
                 data.close()
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
-              
+
       - job: RunTestOnModule
+        dependsOn: 
+          - PreprocessDataJob
         steps:
           - task: Bash@3
             continueOnError: false
