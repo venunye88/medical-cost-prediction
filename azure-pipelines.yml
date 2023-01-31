@@ -371,7 +371,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                mkdir model
+                mkdir module
                 mv model.pkl model
 
           # Copy model into storage account
