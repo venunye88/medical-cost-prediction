@@ -338,10 +338,11 @@ stages:
                 --kind $(kind) \
                 -l $(location)
 
+          # Give containerapp permision to download model from storage account
           - task: AzureCLI@2
-            displayName: enable role assignment
+            displayName: grant storage account permision to containerapp
             inputs:
-              azureSubscription: 'msk-pipeline'
+              azureSubscription: '$(subscription)'
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
