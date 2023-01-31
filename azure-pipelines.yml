@@ -12,6 +12,7 @@ variables:
     value: env-medical-cost-prediction
   - name: subscription
     value: 'Data Science IAC'
+
 stages:
 
   # Run Test on module
@@ -126,7 +127,7 @@ stages:
 
   #Deploy Cloud Infrastructure
   - stage: InfrastructureDeployment
-    dependsOn: TestModuleStage
+    dependsOn: TestAndBuildModule
     jobs:
       - job: DeployResources
         steps:
