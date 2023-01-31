@@ -4,14 +4,24 @@ trigger:
       - master
 
 variables:
+
   - name: location
     value: eastus
+
   - name: resource-group
     value: rg-medical-cost-prediction
+
   - name: containerapp-environment
     value: env-medical-cost-prediction
+
   - name: subscription
     value: 'Data Science IAC'
+
+  - name: containerRegistry
+    value: cloudwithdeb
+
+  - name: repository
+    value: cloudwithdeb
 
 stages:
 
@@ -24,6 +34,7 @@ stages:
         displayName: Validate module accuracy
         steps:
 
+          # Setup python version to use in your pipeline
           - task: UsePythonVersion@0
             displayName: Set python version
             inputs:
@@ -31,6 +42,7 @@ stages:
               addToPath: true
               architecture: 'x64'
 
+          # Install python packages in requirements.txt file
           - task: Bash@3
             displayName: Install python packages
             inputs:
@@ -39,6 +51,7 @@ stages:
                 pip install -r requirements.txt
               workingDirectory: '$(System.DefaultWorkingDirectory)/'
 
+          # Download dataset to be used run test
           - task: Bash@3
             displayName: Download Dataset
             inputs:
@@ -48,6 +61,7 @@ stages:
                 mv medical_cost.zip ../data
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
 
+          # Extract dataset from zip file
           - task: PythonScript@0
             displayName: Extract dataset from zip file
             inputs:
@@ -59,6 +73,7 @@ stages:
                 data.close()
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
 
+          # Run unittest
           - task: Bash@3
             continueOnError: false
             displayName: Run unittest
@@ -71,8 +86,10 @@ stages:
       # Train Module After Test Passed
       - job: BuildModel
         dependsOn: TestModule
+        condition: succeeded()
         steps:
           
+          # Use python version
           - task: UsePythonVersion@0
             displayName: Set python version
             inputs:
@@ -80,6 +97,7 @@ stages:
               addToPath: true
               architecture: 'x64'
 
+          # Install python packages from requirements.txt file
           - task: Bash@3
             displayName: Install python packages
             inputs:
@@ -88,6 +106,7 @@ stages:
                 pip install -r requirements.txt
               workingDirectory: '$(System.DefaultWorkingDirectory)/'
 
+          # Download dataset to be used to build our model
           - task: Bash@3
             displayName: Download Dataset
             inputs:
@@ -97,6 +116,7 @@ stages:
                 mv medical_cost.zip ../data
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
 
+          # Extract dataset from zipfile
           - task: PythonScript@0
             displayName: Extract dataset from zip file
             inputs:
@@ -108,6 +128,7 @@ stages:
                 data.close()
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
 
+          # Train model and save model locally
           - task: Bash@3
             displayName: Train model
             inputs:
@@ -118,6 +139,7 @@ stages:
                 mv model.pkl module
               workingDirectory: '$(System.DefaultWorkingDirectory)/model'
 
+          # Publish generated model
           - task: PublishPipelineArtifact@1
             displayName: publish model as an artifact
             inputs:
@@ -125,19 +147,16 @@ stages:
               artifact: 'drop'
               publishLocation: 'pipeline'
 
-          # - task: PublishBuildArtifacts@1
-          #   displayName: publish build model as an artifact
-          #   inputs:
-          #     PathtoPublish: '$(System.DefaultWorkingDirectory)/model/module'
-          #     ArtifactName: 'drop'
-          #     publishLocation: 'Container'
-
   - stage: DockerizeApiEndpoint
     dependsOn: TestAndBuildModule
+    condition: succeeded()
     jobs:
+
+      # Test Model Endpoint
       - job: TestEndpoint
         steps:
 
+          # Use python versioon
           - task: UsePythonVersion@0
             displayName: Set python version
             inputs:
@@ -145,12 +164,15 @@ stages:
               addToPath: true
               architecture: 'x64'
 
+          # Download model from artifact
           - task: DownloadPipelineArtifact@2
+            displayName: Download model
             inputs:
               buildType: 'current'
               artifactName: 'drop'
               targetPath: '$(System.DefaultWorkingDirectory)/api'
-              
+          
+          # Install python packages
           - task: Bash@3
             displayName: Install python packages
             inputs:
@@ -159,6 +181,7 @@ stages:
                 pip install -r requirements.txt
               workingDirectory: '$(System.DefaultWorkingDirectory)/api'
 
+          # Run unittest on endpoint build fro model
           - task: Bash@3
             displayName: Run unittest
             inputs:
@@ -166,28 +189,18 @@ stages:
               script: |
                 pytest -v -s
               workingDirectory: '$(System.DefaultWorkingDirectory)/api'
-
-  #Deploy Cloud Infrastructure
-  # - stage: InfrastructureDeployment
-  #   dependsOn: TestAndBuildModule
-  #   jobs:
-  #     - job: DeployResources
-  #       steps:
-                   
-  #         - task: AzureCLI@2
-  #           displayName: create resource group
-  #           inputs:
-  #             azureSubscription: $(subscription)
-  #             scriptType: 'bash'
-  #             scriptLocation: 'inlineScript'
-  #             inlineScript: az group create --location $(location) --name $(resource-group)
-          
-  #         - task: AzureCLI@2
-  #           displayName: create containerapp environment
-  #           inputs:
-  #             azureSubscription: $(subscription)
-  #             scriptType: 'bash'
-  #             scriptLocation: 'inlineScript'
-  #             inlineScript: |
-  #               az containerapp env create -n $(containerapp-environment) -g $(resource-group) \
-  #               --location $(location)
+      
+      # Dockerize model and push to dockerhub
+      - job: DockerizeEndpoint
+        steps:
+    
+          - task: Docker@2
+            displayName: Build and push image to dockerhub
+            inputs:
+              containerRegistry: '$(containerRegistry)'
+              repository: '$(repository)'
+              command: 'buildAndPush'
+              Dockerfile: '$(System.DefaultWorkingDirectory)/api/Dockerfile'
+              tags: |
+                $(Build.BuildId)
+                latest
