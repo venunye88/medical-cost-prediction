@@ -3,14 +3,23 @@ trigger:
     include:
       - master
 
+variables:
+  - name: location
+    value: eastus
+  - name: resource-group
+    value: rg-medical-cost-prediction
+  - name: containerapp-environment
+    value: env-medical-cost-prediction
+  - name: subscription
+    value: 'Data Science IAC'
 stages:
 
   # Run Test on module
-  - stage: TestModuleStage
+  - stage: TestAndBuildModule
     jobs:
 
       # Test Module Performance
-      - job: TestModuleJob
+      - job: TestModule
         displayName: Validate module accuracy
         steps:
 
@@ -114,12 +123,29 @@ stages:
               PathtoPublish: '$(System.DefaultWorkingDirectory)/model/module'
               ArtifactName: 'drop'
               publishLocation: 'Container'
-          
 
-  # Deploy Cloud Infrastructure
-  # - stage: InfrastructureDeployment
-  #   jobs:
-  #     - job: DeployResources
+  #Deploy Cloud Infrastructure
+  - stage: InfrastructureDeployment
+    dependsOn: TestModuleStage
+    jobs:
+      - job: DeployResources
+        steps:
+                   
+          - task: AzureCLI@2
+            displayName: create resource group
+            inputs:
+              azureSubscription: $(subscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: az group create --location $(location) --name $(resource-group)
+          
+          - task: AzureCLI@2
+            displayName: create containerapp environment
+            inputs:
+              azureSubscription: $(subscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az containerapp env create -n $(containerapp-environment) -g $(resource-group) \
+                --location $(location)
       
-  # Deploy Model to cloud
-  # - stage: DeployApi
