@@ -338,6 +338,18 @@ stages:
                 --kind $(kind) \
                 -l $(location)
 
+          - task: AzureCLI@2
+            displayName: enable role assignment
+            inputs:
+              azureSubscription: 'msk-pipeline'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                
+                CONTAINER_APP_ID="/subscriptions/$(subscriptionID)/resourceGroups/$(resource-group)/providers/Microsoft.App/containerApps/$(containerapp-name)"
+                MANAGED_IDENTITY_ID=$(az resource show --ids $CONTAINER_APP_ID --query "identity.principalId" -o tsv | tr -d '[:space:]')
+                az role assignment create --role "Storage Blob Data Contributor" --assignee-object-id $MANAGED_IDENTITY_ID --assignee-principal-type ServicePrincipal
+
           # Download model from artifact
           - task: DownloadPipelineArtifact@2
             displayName: Download model
