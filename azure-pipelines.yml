@@ -147,7 +147,7 @@ stages:
               workingDirectory: '$(System.DefaultWorkingDirectory)/api'
 
           - task: Bash@3
-            displayName: Install python packages
+            displayName: Run unittest
             inputs:
               targetType: 'inline'
               script: |
