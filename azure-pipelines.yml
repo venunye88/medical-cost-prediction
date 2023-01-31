@@ -105,7 +105,6 @@ stages:
               targetType: 'inline'
               script: |
                 pytest -v -s
-                pytest -v --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
               workingDirectory: '$(System.DefaultWorkingDirectory)/model'
 
       # Train Module After Test Passed
@@ -213,7 +212,6 @@ stages:
               targetType: 'inline'
               script: |
                 pytest -v -s
-                pytest -v --junitxml=junit/test-results.xml --cov=. --cov-report=xml --cov-report=html
               workingDirectory: '$(System.DefaultWorkingDirectory)/api'
       
       # Dockerize model and push to dockerhub
