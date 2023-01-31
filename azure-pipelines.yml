@@ -59,13 +59,28 @@ stages:
         dependsOn: 
           - PreprocessDataJob
         steps:
+
+          - task: UsePythonVersion@0
+            displayName: Install Python Packages
+            inputs:
+              versionSpec: '3.10'
+              addToPath: true
+              architecture: 'x64'
+
+          - task: Bash@3
+            displayName: Install python packages
+            inputs:
+              targetType: 'inline'
+              script: |
+                pip install -r requirements.txt
+              workingDirectory: '$(System.DefaultWorkingDirectory)/'
+              
           - task: Bash@3
             continueOnError: false
             displayName: Test Model
             inputs:
               targetType: 'inline'
               script: |
-                pip install pytest
                 pytest -v -s
               workingDirectory: '$(System.DefaultWorkingDirectory)/model'
       
