@@ -44,8 +44,22 @@ stages:
                 mv medical_cost.zip ../data
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
 
+<<<<<<< HEAD
       - job: RunTestOnModule
         steps:
+=======
+          - task: PythonScript@0
+            displayName: Extract File
+            inputs:
+              scriptSource: 'inline'
+              script: |
+                import zipfile
+                data=zipfile.ZipFile("../data/medical_cost.zip")
+                data.extractall("../data/")
+                data.close()
+              workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
+
+>>>>>>> 2b766f48966e60235144607385be9f4660f83dc8
           - task: Bash@3
             continueOnError: false
             displayName: Train model
