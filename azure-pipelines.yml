@@ -118,12 +118,18 @@ stages:
                 mv model.pkl module
               workingDirectory: '$(System.DefaultWorkingDirectory)/model'
 
-          - task: PublishBuildArtifacts@1
-            displayName: publish build model as an artifact
+          - task: PublishPipelineArtifact@1
+            displayName: publish model as an artifact
             inputs:
-              PathtoPublish: '$(System.DefaultWorkingDirectory)/model/module'
-              ArtifactName: 'drop'
-              publishLocation: 'Container'
+              targetPath: '$(System.DefaultWorkingDirectory)/model/module'
+              publishLocation: 'pipeline'
+
+          # - task: PublishBuildArtifacts@1
+          #   displayName: publish build model as an artifact
+          #   inputs:
+          #     PathtoPublish: '$(System.DefaultWorkingDirectory)/model/module'
+          #     ArtifactName: 'drop'
+          #     publishLocation: 'Container'
 
   - stage: DockerizeApiEndpoint
     dependsOn: TestAndBuildModule
