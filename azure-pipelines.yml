@@ -60,8 +60,7 @@ stages:
 
       # Train Module After Test Passed
       - job: BuildModel
-        dependsOn: 
-          - TestModuleStage
+        dependsOn: TestModuleJob
         steps:
           
           - task: UsePythonVersion@0
