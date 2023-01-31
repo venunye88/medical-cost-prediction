@@ -218,6 +218,8 @@ stages:
       
       # Dockerize model and push to dockerhub
       - job: DockerizeEndpoint
+        dependsOn: TestEndpoint
+        condition: succeeded()
         steps:
     
           - task: Docker@2
@@ -237,7 +239,7 @@ stages:
       - DockerizeApiEndpoint
     condition: succeeded()
     jobs:
-      
+
       - job: DeployResources
         steps:
            
@@ -287,7 +289,7 @@ stages:
                 --name $(containerapp-environment-name) \
                 --logs-workspace-id $WORKSPACE_ID \
                 --location $(location) 
-  
+        
           # Deploy containerapp
           - task: AzureCLI@2
             displayName: Deploy containerapp
@@ -337,6 +339,56 @@ stages:
                 --kind $(kind) \
                 -l $(location)
 
+          # Create storage container for model
+          - task: AzureCLI@2
+            displayName: Create container
+            inputs:
+              azureSubscription: $(subscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az storage container create \
+                --name $(storage-account-container) \
+                --account-name $(storage-account) \
+                --resource-group $(resource-group)
+        
+      - job: UploadModelToStorageAccount
+        pool: 
+          vmImage: 'windows-latest'
+        dependsOn: DeployResources
+        condition: succeeded()
+        steps:
+
+          # Download model from pipeline artifacts
+          - task: DownloadPipelineArtifact@2
+            displayName: Download model
+            inputs:
+              buildType: 'current'
+              artifactName: 'drop'
+              targetPath: '$(System.DefaultWorkingDirectory)/api'
+          
+          # Move model into a new directory
+          - task: AzureCLI@2
+            displayName: Move model into a directory
+            inputs:
+              azureSubscription: $(subscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                mkdir module
+                mv model.pkl module
+              workingDirectory: '$(System.DefaultWorkingDirectory)/api'
+
+          # Copy model into storage account
+          - task: AzureFileCopy@3
+            displayName: Copy model into storage account
+            inputs:
+              SourcePath: '$(System.DefaultWorkingDirectory)/api/module/'
+              azureSubscription: '$(subscription)'
+              Destination: 'AzureBlob'
+              storage: '$(storage-account)'
+              ContainerName: '$(storage-account-container)'
+
           # Give containerapp permision to download model from storage account
           - task: AzureCLI@2
             displayName: grant storage account permision to containerapp
@@ -348,12 +400,3 @@ stages:
                 CONTAINER_APP_ID="/subscriptions/$(subscriptionID)/resourceGroups/$(resource-group)/providers/Microsoft.App/containerApps/$(containerapp-name)"
                 MANAGED_IDENTITY_ID=$(az resource show --ids $CONTAINER_APP_ID --query "identity.principalId" -o tsv | tr -d '[:space:]')
                 az role assignment create --role "Storage Blob Data Contributor" --assignee-object-id $MANAGED_IDENTITY_ID --assignee-principal-type ServicePrincipal
-
-          # Download model from artifact
-          - task: DownloadPipelineArtifact@2
-            displayName: Download model
-            inputs:
-              buildType: 'current'
-              artifactName: 'drop'
-              targetPath: '$(System.DefaultWorkingDirectory)/api'
-          
