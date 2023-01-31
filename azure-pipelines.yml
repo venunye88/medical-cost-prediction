@@ -5,11 +5,11 @@ trigger:
 
 stages:
 
-  # Train, validate and test module
-  - stage: TrainAndValidateModel
+  # Preprocess Dataset
+  - stage: PreprocessDatasetStage
     jobs:
 
-      - job: PreprocessDataAndTrainModel
+      - job: PreprocessDataJob
         displayName: Download and proccess datasets
         steps:
 
@@ -44,14 +44,17 @@ stages:
                 mv medical_cost.zip ../data
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
 
+      - job: RunTestOnModule
+        steps:
           - task: Bash@3
+            continueOnError: false
             displayName: Train model
             inputs:
               targetType: 'inline'
               script: |
-                python train.py
+                pytest -v -s
               workingDirectory: '$(System.DefaultWorkingDirectory)/model'
-
+      
       # - job: TestModel
 
   # Deploy Cloud Infrastructure
