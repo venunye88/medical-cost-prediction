@@ -11,7 +11,7 @@ stages:
 
       # Test Module Performance
       - job: TestModuleJob
-        displayName: Validate module accuracy
+        displayName: Validate module
         steps:
 
           - task: UsePythonVersion@0
@@ -107,6 +107,7 @@ stages:
                 python train.py
                 mv model.pkl module
               workingDirectory: '$(System.DefaultWorkingDirectory)/model'
+
 
   # Deploy Cloud Infrastructure
   # - stage: InfrastructureDeployment
