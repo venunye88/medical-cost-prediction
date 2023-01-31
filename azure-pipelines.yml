@@ -379,6 +379,18 @@ stages:
                 mv model.pkl module
               workingDirectory: '$(System.DefaultWorkingDirectory)/api'
 
+          # Delete existing model from storage account container
+          - task: AzureCLI@2
+            displayName: Delete model from storage container
+            inputs:
+              azureSubscription: $(subscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                az storage blob delete-batch \
+                --source '$(storage-account-container)' \
+                --account-name $(storage-account)
+
           # Copy model into storage account
           - task: AzureFileCopy@3
             displayName: Copy model into storage account
@@ -391,7 +403,7 @@ stages:
 
           # Give containerapp permision to download model from storage account
           - task: AzureCLI@2
-            displayName: grant storage account permision to containerapp
+            displayName: grant containerapp permision to download model
             inputs:
               azureSubscription: '$(subscription)'
               scriptType: 'bash'
