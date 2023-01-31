@@ -28,3 +28,4 @@ README.md
 model/venv
 api/venv
 model/.ipynb_checkpoints
+api/test_api.py

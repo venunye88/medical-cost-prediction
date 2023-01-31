@@ -125,28 +125,56 @@ stages:
               ArtifactName: 'drop'
               publishLocation: 'Container'
 
-
-  #Deploy Cloud Infrastructure
-  - stage: InfrastructureDeployment
+  - stage: DockerizeApiEndpoint
     dependsOn: TestAndBuildModule
     jobs:
-      - job: DeployResources
+      - job: TestEndpoint
         steps:
+
+          - task: UsePythonVersion@0
+            displayName: Set python version
+            inputs:
+              versionSpec: '3.10'
+              addToPath: true
+              architecture: 'x64'
+        
+          - task: Bash@3
+            displayName: Install python packages
+            inputs:
+              targetType: 'inline'
+              script: |
+                pip install -r requirements.txt
+              workingDirectory: '$(System.DefaultWorkingDirectory)/api'
+
+          - task: Bash@3
+            displayName: Install python packages
+            inputs:
+              targetType: 'inline'
+              script: |
+                pytest -v -s
+              workingDirectory: '$(System.DefaultWorkingDirectory)/api'
+
+  #Deploy Cloud Infrastructure
+  # - stage: InfrastructureDeployment
+  #   dependsOn: TestAndBuildModule
+  #   jobs:
+  #     - job: DeployResources
+  #       steps:
                    
-          - task: AzureCLI@2
-            displayName: create resource group
-            inputs:
-              azureSubscription: $(subscription)
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: az group create --location $(location) --name $(resource-group)
+  #         - task: AzureCLI@2
+  #           displayName: create resource group
+  #           inputs:
+  #             azureSubscription: $(subscription)
+  #             scriptType: 'bash'
+  #             scriptLocation: 'inlineScript'
+  #             inlineScript: az group create --location $(location) --name $(resource-group)
           
-          - task: AzureCLI@2
-            displayName: create containerapp environment
-            inputs:
-              azureSubscription: $(subscription)
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                az containerapp env create -n $(containerapp-environment) -g $(resource-group) \
-                --location $(location)
+  #         - task: AzureCLI@2
+  #           displayName: create containerapp environment
+  #           inputs:
+  #             azureSubscription: $(subscription)
+  #             scriptType: 'bash'
+  #             scriptLocation: 'inlineScript'
+  #             inlineScript: |
+  #               az containerapp env create -n $(containerapp-environment) -g $(resource-group) \
+  #               --location $(location)
