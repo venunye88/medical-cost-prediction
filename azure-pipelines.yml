@@ -6,7 +6,7 @@ trigger:
 stages:
 
   # Preprocess Dataset
-  - stage: PreprocessDatasetStage
+  - stage: TestModulePerformance
     jobs:
 
       - job: PreprocessDataJob
@@ -55,26 +55,6 @@ stages:
                 data.close()
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
 
-      - job: RunTestOnModule
-        dependsOn: 
-          - PreprocessDataJob
-        steps:
-
-          - task: UsePythonVersion@0
-            displayName: Install Python Packages
-            inputs:
-              versionSpec: '3.10'
-              addToPath: true
-              architecture: 'x64'
-
-          - task: Bash@3
-            displayName: Install python packages
-            inputs:
-              targetType: 'inline'
-              script: |
-                pip install -r requirements.txt
-              workingDirectory: '$(System.DefaultWorkingDirectory)/'
-              
           - task: Bash@3
             continueOnError: false
             displayName: Test Model
@@ -83,7 +63,7 @@ stages:
               script: |
                 pytest -v -s
               workingDirectory: '$(System.DefaultWorkingDirectory)/model'
-      
+
       # - job: TestModel
 
   # Deploy Cloud Infrastructure
