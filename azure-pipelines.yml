@@ -44,6 +44,17 @@ stages:
                 mv medical_cost.zip ../data
               workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
 
+          - task: PythonScript@0
+            displayName: Extract File
+            inputs:
+              scriptSource: 'inline'
+              script: |
+                import zipfile
+                data=zipfile.ZipFile("../data/medical_cost.zip")
+                data.extractall("../data/")
+                data.close()
+              workingDirectory: '$(System.DefaultWorkingDirectory)/notebooks'
+
           - task: Bash@3
             displayName: Train model
             inputs:
