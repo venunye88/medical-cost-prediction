@@ -198,7 +198,7 @@ stages:
             displayName: Build and push image to dockerhub
             inputs:
               containerRegistry: '$(containerRegistry)'
-              repository: '$(repository)'
+              repository: '$(repository)/medical-cost'
               command: 'buildAndPush'
               Dockerfile: '$(System.DefaultWorkingDirectory)/api/Dockerfile'
               tags: |
