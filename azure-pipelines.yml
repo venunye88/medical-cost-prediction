@@ -372,13 +372,13 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 mkdir module
-                mv model.pkl model
+                mv drop/model.pkl module
 
           # Copy model into storage account
           - task: AzureFileCopy@3
             displayName: Copy model into storage account
             inputs:
-              SourcePath: '$(System.DefaultWorkingDirectory)/api/model/'
+              SourcePath: '$(System.DefaultWorkingDirectory)/api/module/'
               azureSubscription: '$(subscription)'
               Destination: 'AzureBlob'
               storage: '$(storage-account)'
