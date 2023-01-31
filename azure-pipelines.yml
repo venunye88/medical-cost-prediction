@@ -9,7 +9,7 @@ variables:
     value: eastus
 
   - name: resource-group
-    value: rg-medical-cost-prediction
+    value: medical-cost
 
   - name: containerapp-environment
     value: env-medical-cost-prediction
@@ -22,6 +22,24 @@ variables:
 
   - name: repository
     value: cloudwithdeb
+
+  - name: containerapp-name
+    value: medical-cost
+
+  - name: image-name
+    value: $(repository)/medical-cost:latest
+  
+  - name: containerapp-environment-name
+    value: medical-cost
+  
+  - name: ingress
+    value: external
+
+  - name: storage-account
+    value: modicalcost06601
+
+  - name: kind
+    value: StorageV2
 
 stages:
 
@@ -204,3 +222,92 @@ stages:
               tags: |
                 $(Build.BuildId)
                 latest
+
+  - stage: DeployInfrastructure
+    dependsOn: 
+      - TestAndBuildModule
+      - DockerizeApiEndpoint
+    condition: succeeded()
+    jobs:
+      
+      - job: DeployResources
+        steps:
+           
+           # Enable containerapp extension on runner
+          - task: AzureCLI@2
+            displayName: Enable containerapp extension
+            inputs:
+              azureSubscription: '$(subscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: 'az extension add -n containerapp'
+
+          # Create resource group to place containerapp init
+          - task: AzureCLI@2
+            displayName: Create resource group
+            inputs:
+              azureSubscription: $(subscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: az group create --location $(location) --name $(resource-group)
+
+          # Deploy containerapp
+          - task: AzureCLI@2
+            displayName: Deploy containerapp
+            inputs:
+              azureSubscription: $(subscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                
+                az containerapp create \
+                -n $(containerapp-name) \
+                -g $(resource-group) \
+                --image $(image-name) \
+                --environment $(containerapp-environment-name) \
+                --ingress $(ingress) \
+                --target-port 8000 \
+                --query properties.configuration.ingress.fqdn \
+                --min-replicas 0 \
+                --max-replicas 10 \
+                --tags \
+                name='$(containerapp-name)' \
+                purpose='To be used to predict medical charges'
+
+          # Enable managed identity on containerapp
+          - task: AzureCLI@2
+            displayName: Enable managed identity on containerapp
+            inputs:
+              azureSubscription: $(subscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+
+                az containerapp identity assign \
+                -n $(containerapp-name) \
+                -g $(resource-group) \
+                  --system-assigned
+          
+          # Deploy storage account to upload model into
+          - task: AzureCLI@2
+            displayName: Deploy storage account
+            inputs:
+              azureSubscription: $(subscription)
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+
+                az storage account create\
+                -n $(storage-account) \
+                -g $(resource-group) \
+                --kind $(kind) \
+                -l $(location)
+
+          # Download model from artifact
+          - task: DownloadPipelineArtifact@2
+            displayName: Download model
+            inputs:
+              buildType: 'current'
+              artifactName: 'drop'
+              targetPath: '$(System.DefaultWorkingDirectory)/api'
+          
