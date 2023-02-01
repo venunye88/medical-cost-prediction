@@ -46,7 +46,10 @@ variables:
 
   - name: containerapp-log-analytics
     value: medical-cost
-
+  
+  - name: storage-account-container
+    value: medical-cost
+    
 stages:
 
   # Run Test on module
