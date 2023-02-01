@@ -412,4 +412,4 @@ stages:
               inlineScript: |
                 CONTAINER_APP_ID="/subscriptions/$(subscriptionID)/resourceGroups/$(resource-group)/providers/Microsoft.App/containerApps/$(containerapp-name)"
                 MANAGED_IDENTITY_ID=$(az resource show --ids $CONTAINER_APP_ID --query "identity.principalId" -o tsv | tr -d '[:space:]')
-                az role assignment create --role "Storage Blob Data Contributor" --assignee-object-id $MANAGED_IDENTITY_ID --assignee-principal-type ServicePrincipal
+                az role assignment create --role "Storage Blob Data Contributor" --assignee-object-id $MANAGED_IDENTITY_ID
