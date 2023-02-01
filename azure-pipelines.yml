@@ -340,6 +340,18 @@ stages:
                 --kind $(kind) \
                 -l $(location)
 
+          # Give containerapp permision to download model from storage account
+          - task: AzureCLI@2
+            displayName: grant containerapp permision to download model
+            inputs:
+              azureSubscription: '$(subscription)'
+              scriptType: 'bash'
+              scriptLocation: 'inlineScript'
+              inlineScript: |
+                CONTAINER_APP_ID="/subscriptions/$(subscriptionID)/resourceGroups/$(resource-group)/providers/Microsoft.App/containerApps/$(containerapp-name)"
+                MANAGED_IDENTITY_ID=$(az resource show --ids $CONTAINER_APP_ID --query "identity.principalId" -o tsv | tr -d '[:space:]')
+                az role assignment create --role "Storage Blob Data Contributor" --assignee-object-id $MANAGED_IDENTITY_ID --assignee-principal-type ServicePrincipal
+                
           # Create storage container for model
           - task: AzureCLI@2
             displayName: Create container
@@ -401,15 +413,3 @@ stages:
               Destination: 'AzureBlob'
               storage: '$(storage-account)'
               ContainerName: '$(storage-account-container)'
-
-          # Give containerapp permision to download model from storage account
-          - task: AzureCLI@2
-            displayName: grant containerapp permision to download model
-            inputs:
-              azureSubscription: '$(subscription)'
-              scriptType: 'bash'
-              scriptLocation: 'inlineScript'
-              inlineScript: |
-                CONTAINER_APP_ID="/subscriptions/$(subscriptionID)/resourceGroups/$(resource-group)/providers/Microsoft.App/containerApps/$(containerapp-name)"
-                MANAGED_IDENTITY_ID=$(az resource show --ids $CONTAINER_APP_ID --query "identity.principalId" -o tsv | tr -d '[:space:]')
-                az role assignment create --role "Storage Blob Data Contributor" --assignee-object-id $MANAGED_IDENTITY_ID
