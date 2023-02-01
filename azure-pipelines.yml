@@ -49,7 +49,7 @@ variables:
   
   - name: storage-account-container
     value: medical-cost
-    
+
 stages:
 
   # Run Test on module
@@ -349,7 +349,7 @@ stages:
               scriptLocation: 'inlineScript'
               inlineScript: |
                 az storage container create \
-                --name $(storage-account-container) \
+                --name '$(storage-account-container)' \
                 --account-name $(storage-account) \
                 --resource-group $(resource-group)
         
