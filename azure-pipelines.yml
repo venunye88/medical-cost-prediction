@@ -290,7 +290,7 @@ stages:
                 --name $(containerapp-environment-name) \
                 --logs-workspace-id $WORKSPACE_ID \
                 --location $(location) 
-        
+     
           # Deploy containerapp
           - task: AzureCLI@2
             displayName: Deploy containerapp
@@ -311,8 +311,11 @@ stages:
                 --max-replicas 10 \
                 --tags \
                 name='$(containerapp-name)' \
-                purpose='To be used to predict medical charges'
-
+                purpose='To be used to predict medical charges' \
+                --env-vars \
+                STORAGE_ACCOUNT_URL='https://$(storage-account).blob.core.windows.net/' \
+                STORAGE_ACCOUNT_CONTAINER_NAME='$(storage-account-container)'
+        
           # Enable managed identity on containerapp
           - task: AzureCLI@2
             displayName: Enable managed identity on containerapp
@@ -350,8 +353,9 @@ stages:
               inlineScript: |
                 CONTAINER_APP_ID="/subscriptions/$(subscriptionID)/resourceGroups/$(resource-group)/providers/Microsoft.App/containerApps/$(containerapp-name)"
                 MANAGED_IDENTITY_ID=$(az resource show --ids $CONTAINER_APP_ID --query "identity.principalId" -o tsv | tr -d '[:space:]')
-                az role assignment create --role "Storage Blob Data Contributor" --assignee-object-id $MANAGED_IDENTITY_ID --assignee-principal-type ServicePrincipal
-                
+                az role assignment create --role "Storage Blob Data Owner" --assignee-object-id $MANAGED_IDENTITY_ID --assignee-principal-type ServicePrincipal \
+                --scope '/subscriptions/$(subscriptionID)/resourceGroups/$(resource-group)/providers/Microsoft.Storage/storageAccounts/$(storage-account)'
+
           # Create storage container for model
           - task: AzureCLI@2
             displayName: Create container
