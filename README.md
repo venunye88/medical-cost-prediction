@@ -122,6 +122,3 @@ Since serverless technologies were used for the entire project life cycle, it co
 | Resource Group            | $ 0.0 |
 | Container App Environment | $ 0.0 |
 | Total                     | $ 0.0 |
-
-### Usecase Diagram
-![use case diagram](./images/use-case-diagram.png)
