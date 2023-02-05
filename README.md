@@ -24,16 +24,17 @@ Many people in the world don't take into account their health. They live their l
 | Notebook       | 0.19.2         |
 | Scikit Learn   | 5.6.0          |
 
-* Vscode
 * Docker / Dockerhub
+* Git / Github
 * Azure CLI
+* Vscode
 
 ### Hardware Requirements
 * Ubuntu 22.04
 * 16 Gig Ram
 * 1 Terabyte HDD
 
-### Machine Learning Algorithms Experimented With
+### Algorithms Experimented With
 * Linear Regression
 * Random Forest Regressor
 * Decision Tree
@@ -46,12 +47,28 @@ Many people in the world don't take into account their health. They live their l
 
 ### Evaluation Metrics Used
 * R Squared
+* Mean Absolute Error
 * Mean Absolute Percentage Error
-* Mean Squared Error
 
 ### Hyperpparameter Tuning Technique Used
 * GridSearchCV
 * RandomSearchCV
+
+### Base Model
+After building the base model by iterating through the algorithms bellow, `RandomForestRegressor` and `LightGBM` had a good accuracy score and a lower loss value compared to the other algorithms. Bello are the matrics for each alorithm used.
+
+| Algorithm                 |MAE        |MAPE   |R2     |
+| --------------------------|-----------|-------|-------|
+|RandomForestRegressor      |2740.39    |0.294  |0.821  |
+|DecisionTreeRegressor      |3329.762   |0.369  |0.638  |  
+|KNeighborsRegressor        |3392.823   |0.391  |0.775  |
+|LinearRegression           |4439.631   |0.423  |0.703  |
+|LightGBM                   |2854.444   |0.302  |0.821  |
+|Ridge                      |4443.001   |0.425  |0.704  |
+|Lasso                      |4439.069   |0.423  |0.703  |
+|SVR                        |7743.029   |0.867  |-0.103 |
+
+After building the base model, hyperparameter tunning was performed on both `RandomForestRegressor` and `LightGBM` using `RandomizedSearchCV` and `GridSearchCV` with `Scikiltlearn Pipeline`. This is because their accuracy score were higher and loss value were lower compared to the other algorithms. 
 
 ### Cloud Platform Used
 * Microsoft Azure
@@ -69,12 +86,18 @@ The model was deployed on `Microsoft Azure`. The diagram bellow is the cloud arc
 * Managed Identity
 
 ### Azure DevOps Resources Used
-Yaml Pipeline
-Repos
-Board
+* Yaml Pipeline
+* Repos
+* Board
 
 The model was deployed to `Azure` using `Azure DevOps` CICD Yaml pipeline by building, testing and deploying. The diagram bellow represent how the model was released onto microsoft azure through azure devops yaml pipeline.
 ![Deploy model to azure](./images/deployment.png)
+
+### Making Request To Model
+![make request to model](./images/request.drawio.png)
+
+### How model can be accessed
+![how model can be accessed](./images/access.png)
 
 ### Training Steps:
 1. Retrieved Dataset.
@@ -99,3 +122,6 @@ Since serverless technologies were used for the entire project life cycle, it co
 | Resource Group            | $ 0.0 |
 | Container App Environment | $ 0.0 |
 | Total                     | $ 0.0 |
+
+### Usecase Diagram
+![use case diagram](./images/use-case-diagram.png)
