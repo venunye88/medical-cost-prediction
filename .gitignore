@@ -12,3 +12,4 @@ data/medical_cost.zip
 data/medical-cost.csv
 api/model.pkl
 model.pkl
+env
