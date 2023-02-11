@@ -122,3 +122,8 @@ Since serverless technologies were used for the entire project life cycle, it co
 | Resource Group            | $ 0.0 |
 | Container App Environment | $ 0.0 |
 | Total                     | $ 0.0 |
+
+### Medium Article Explaining My Entire Process
+
+Part 1: [Explains how the model was built](https://medium.com/@cloudwithdeb/medical-cost-prediction-using-machine-learning-microsoft-azure-and-azure-devops-part-1-629db04d51d9)
+
