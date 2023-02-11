@@ -127,3 +127,6 @@ Since serverless technologies were used for the entire project life cycle, it co
 
 Part 1: [Explains how the model was built](https://medium.com/@cloudwithdeb/medical-cost-prediction-using-machine-learning-microsoft-azure-and-azure-devops-part-1-629db04d51d9)
 
+Part 2: [Explains how the model was exposed as an API](https://medium.com/@cloudwithdeb/medical-cost-prediction-using-machine-learning-microsoft-azure-and-azure-devops-part-2-b49b23c06b41)
+
+Part 3: [Explains how the model was deployed using infrastructure as code and CICD pipelines with Azure and Azure DevOps](https://medium.com/@cloudwithdeb/medical-cost-prediction-using-machine-learning-microsoft-azure-and-azure-devops-part-3-719ea91789ec)
